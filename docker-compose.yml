@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # Backend Service
+  backend:
+    container_name: collab-canva-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      - DATABASE_URL=mongodb://mongodb:27017/CollabDB
+      - DATABASE_NAME=CollabDB
+      - GOOGLE_CLIENT_ID=57542375146-dmf8df8feb4pbq1493knapoif6vbv7oo.apps.googleusercontent.com
+      - GOOGLE_CLIENT_SECRET=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
+      - JWT_SECRET=38826c333b24434a14c4fa44cdbb1066a1ee1e882737bf4f952a34e4bd6766ddd9aca5405429f5a3ce7a01a7a68fd0305b56f5cb87899862a099915cc629d569
+      - JWT_EXPIRE=30d
+      - FRONTEND_URL=http://localhost:3000
+      - BACKEND_URL=http://backend:8080
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # Frontend Service
+  frontend:
+    container_name: collab-canva-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://backend:8080
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # MongoDB Service
+  mongodb:
+    container_name: collab-canva-database
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_ROOT_USERNAME:-admin}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD:-password}
+    volumes:
+      - mongodb-data:/data/db
+    restart: unless-stopped
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongodb-data:
