@@ -1,17 +1,31 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { Strategy as LocalStrategy } from 'passport-local';
-import User from '../models/User';
+import User, { IUser } from '../models/User';
 import Logger from '../utils/logger';
+import { UserSession } from '../interface/UserSession';
 
-passport.serializeUser((user: any, done) => {
-  done(null, user.id);
+
+passport.serializeUser((user: UserSession, done) => {
+  done(null, user._id);
 });
 
-passport.deserializeUser(async (id, done) => {
+passport.deserializeUser(async (id: string, done) => {
   try {
     const user = await User.findById(id);
-    done(null, user);
+    if (user) {
+      const sessionUser: UserSession = {
+        _id: user._id.toString(),
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+        googleId: user.googleId,
+      };
+      done(null, sessionUser);
+    } else {
+      done(null, null);
+    }
   } catch (err) {
     done(err, null);
   }
@@ -35,13 +49,22 @@ passport.use(
       }
 
       // Check password
-      const isMatch = await (user as any).matchPassword(password);
+      const isMatch = await user.matchPassword(password);
 
       if (!isMatch) {
         return done(null, false, { message: 'Invalid credentials' });
       }
 
-      return done(null, user);
+      const userSession: UserSession = {
+        _id: user._id.toString(),
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+        googleId: user.googleId,
+      };
+
+      return done(null, userSession);
     } catch (err) {
       Logger.error(`Error in Local Strategy: ${err}`);
       return done(err);
@@ -62,7 +85,15 @@ passport.use(
         let user = await User.findOne({ googleId: profile.id });
 
         if (user) {
-          return done(null, user);
+          const userSession: UserSession = {
+            _id: user._id.toString(),
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            avatar: user.avatar,
+            googleId: user.googleId,
+          };
+          return done(null, userSession);
         }
 
         // If not, create new user
@@ -73,10 +104,75 @@ passport.use(
           avatar: profile.photos?.[0].value,
         });
 
-        done(null, user);
+        const userSession: UserSession = {
+          _id: user._id.toString(),
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          avatar: user.avatar,
+          googleId: user.googleId,
+        };
+
+        done(null, userSession);
       } catch (err) {
         Logger.error(`Error in Google Strategy: ${err}`);
         done(err, undefined);
+      }
+    }
+  )
+);
+
+import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
+import { Request } from 'express';
+import { COOKIE_NAME } from '../utils/cookieUtils';
+
+// ... existing imports ...
+
+// JWT Strategy
+const JWT_SECRET = process.env.JWT_SECRET || 'secret';
+
+// Extract JWT from cookie with fallback to Authorization header
+const cookieExtractor = (req: Request): string | null => {
+  let token = null;
+  if (req && req.cookies) {
+    token = req.cookies[COOKIE_NAME];
+  }
+  // Fallback to Authorization header for backward compatibility
+  if (!token && req.headers.authorization) {
+    const parts = req.headers.authorization.split(' ');
+    if (parts.length === 2 && parts[0] === 'Bearer') {
+      token = parts[1];
+    }
+  }
+  return token;
+};
+
+passport.use(
+  new JwtStrategy(
+    {
+      jwtFromRequest: cookieExtractor,
+      secretOrKey: JWT_SECRET,
+    },
+    async (jwtPayload, done) => {
+      try {
+        const user = await User.findById(jwtPayload.userId);
+
+        if (user) {
+          const userSession: UserSession = {
+            id: user._id.toString(),
+            _id: user._id.toString(),
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            avatar: user.avatar,
+            googleId: user.googleId,
+          };
+          return done(null, userSession);
+        } else {
+          return done(null, false);
+        }
+      } catch (err) {
+        return done(err, false);
       }
     }
   )

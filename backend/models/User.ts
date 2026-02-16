@@ -10,6 +10,9 @@ export interface IUser extends Document {
   avatar?: string;
   refreshToken?: string;
   role: UserRole;
+  newEmail?: string;
+  emailVerificationToken?: string;
+  emailVerificationExpires?: Date;
   matchPassword(enteredPassword: string): Promise<boolean>;
 }
 
@@ -44,6 +47,15 @@ const userSchema = new mongoose.Schema(
       type: String,
       select: false,
     },
+    newEmail: {
+      type: String,
+      match: [
+        /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+        'Please add a valid email',
+      ],
+    },
+    emailVerificationToken: String,
+    emailVerificationExpires: Date,
     role: {
       type: String,
       enum: Object.values(UserRole),

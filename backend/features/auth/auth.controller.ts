@@ -4,50 +4,69 @@ import passport from 'passport';
 import AuthService from './auth.service';
 import { registerSchema, loginSchema } from './auth.validation';
 import { AppError } from '../../errors/AppError';
+import { RegisterRequest, RegisterResponse, LoginResponse } from './auth.dto';
+import { setAuthCookie, clearAuthCookie } from '../../utils/cookieUtils';
 
 class AuthController {
   // Register User
-  async register(req: Request, res: Response, next: NextFunction) {
+  async register(req: Request<{}, {}, RegisterRequest>, res: Response<RegisterResponse>, next: NextFunction) {
     try {
+      console.log('Register request received:', req.body);
       // Validate Input
       const { error } = registerSchema.validate(req.body);
       if (error) {
+        console.error('Validation error:', error.details[0].message);
         return next(new AppError(error.details[0].message, 400));
       }
 
+      console.log('Calling AuthService.register...');
       const { user, token } = await AuthService.register(req.body);
+      console.log('AuthService.register successful');
+
+      // Set httpOnly cookie
+      setAuthCookie(res, token);
 
       res.status(201).json({
         success: true,
-        token,
         user: {
-          id: user._id,
+          id: user._id.toString(),
           name: user.name,
           email: user.email,
           role: user.role,
+          avatar: user.avatar,
+          googleId: user.googleId,
         },
       });
     } catch (err) {
+      console.error('Register failed:', err);
+      // Log stack trace if available
+      if (err instanceof Error) {
+          console.error(err.stack);
+      }
       next(err);
     }
   }
 
   // Login User
-  async login(req: Request, res: Response, next: NextFunction) {
+  async login(req: Request, res: Response<LoginResponse>, next: NextFunction) {
     // Validate Input
     const { error } = loginSchema.validate(req.body);
     if (error) {
       return next(new AppError(error.details[0].message, 400));
     }
 
+    // Authenticate function in passport JS, directs us to the passport middlewares(strategy middleware)
     passport.authenticate('local', (err: any, user: any, info: any) => {
+      // Error handling
       if (err) {
         return next(err);
       }
-      if (!user) {
+      // User not found
+      if (!user) {  
         return next(new AppError(info?.message || 'Invalid credentials', 401));
       }
 
+      // Login user
       req.logIn(user, { session: false }, async (err) => {
         if (err) {
           return next(err);
@@ -55,15 +74,20 @@ class AuthController {
 
         const { token } = await AuthService.login(user);
 
+        // Set httpOnly cookie
+        setAuthCookie(res, token);
+
         res.status(200).json({
           success: true,
-          token,
+          message: 'Logged in successfully',
           user: {
-            id: user._id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-          },
+          id: user._id.toString(),
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          avatar: user.avatar,
+          googleId: user.googleId,
+        },
         });
       });
     })(req, res, next);
@@ -86,10 +110,21 @@ class AuthController {
 
       const { token } = await AuthService.googleLogin(user);
 
-      // Redirect to frontend with token
-      // In production, better to use a secure cookie or a temporary code exchange
-      res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth/success?token=${token}`);
+      // Set httpOnly cookie before redirect
+      setAuthCookie(res, token);
+
+      // Redirect to frontend without token in URL
+      res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/success`);
     })(req, res, next);
+  };
+
+  // Logout
+  logout = (req: Request, res: Response) => {
+    clearAuthCookie(res);
+    res.status(200).json({
+      success: true,
+      message: 'Logged out successfully',
+    });
   };
 }
 

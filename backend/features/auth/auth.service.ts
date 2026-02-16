@@ -1,7 +1,7 @@
 
 import jwt from 'jsonwebtoken';
-import User from '../../models/User';
-import { RegisterUser, TokenPayload } from './auth.dto';
+import User, { IUser } from '../../models/User';
+import { RegisterRequest, TokenPayload } from './auth.dto';
 import { UserRole } from '../../enums/userRole';
 import { AppError } from "../../errors/AppError";
 
@@ -18,32 +18,41 @@ class AuthService {
   }
 
   // Register user
-  async register(userData: RegisterUser) {
+  async register(userData: RegisterRequest) {
     const { email } = userData;
 
+    console.log('Checking if user exists:', email);
     // Check if user exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
+      console.warn('User already exists:', email);
       throw new AppError('User already exists', 400);
     }
 
+    console.log('Creating user in database...');
     // Create user
-    const user = await User.create({
-      ...userData,
-      role: UserRole.USER,
-    });
+    try {
+        const user = await User.create({
+          ...userData,
+          role: UserRole.USER,
+        });
+        console.log('User created:', user._id);
 
-    const token = this.generateToken({
-      userId: user._id.toString(),
-      email: user.email,
-      role: user.role,
-    });
+        const token = this.generateToken({
+          userId: user._id.toString(),
+          email: user.email,
+          role: user.role,
+        });
 
-    return { user, token };
+        return { user, token };
+    } catch (error) {
+        console.error('Error creating user:', error);
+        throw error;
+    }
   }
 
   // Login (User already verified by Passport)
-  async login(user: any) {
+  async login(user: IUser) {
     const token = this.generateToken({
       userId: user._id.toString(),
       email: user.email,
@@ -54,7 +63,7 @@ class AuthService {
   }
 
   // Google Login (User verified by Passport Google Strategy)
-  async googleLogin(user: any) {
+  async googleLogin(user: IUser) {
      const token = this.generateToken({
       userId: user._id.toString(),
       email: user.email,
