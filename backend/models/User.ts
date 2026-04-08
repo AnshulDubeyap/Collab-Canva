@@ -13,6 +13,8 @@ export interface IUser extends Document {
   newEmail?: string;
   emailVerificationToken?: string;
   emailVerificationExpires?: Date;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
   matchPassword(enteredPassword: string): Promise<boolean>;
 }
 
@@ -56,6 +58,8 @@ const userSchema = new mongoose.Schema(
     },
     emailVerificationToken: String,
     emailVerificationExpires: Date,
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
     role: {
       type: String,
       enum: Object.values(UserRole),

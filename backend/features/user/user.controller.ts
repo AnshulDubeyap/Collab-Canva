@@ -71,8 +71,8 @@ class UserController {
         return next(new AppError('User ID missing', 400));
       }
 
-      const { newEmail } = req.body;
-      const token = await UserService.requestEmailChange(req.user.id, newEmail);
+      const { newEmail, currentPassword } = req.body;
+      const token = await UserService.requestEmailChange(req.user.id, newEmail, currentPassword);
 
       res.status(200).json({
         success: true,

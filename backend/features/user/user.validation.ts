@@ -7,6 +7,7 @@ export const updateProfileSchema = Joi.object({
 
 export const requestEmailChangeSchema = Joi.object({
   newEmail: Joi.string().email().required(),
+  currentPassword: Joi.string().optional(), // Optional because Google users won't have it
 });
 
 export const verifyEmailChangeSchema = Joi.object({

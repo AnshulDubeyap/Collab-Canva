@@ -2,7 +2,7 @@
 import { Request, Response, NextFunction } from 'express';
 import passport from 'passport';
 import AuthService from './auth.service';
-import { registerSchema, loginSchema } from './auth.validation';
+import { registerSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema } from './auth.validation';
 import { AppError } from '../../errors/AppError';
 import { RegisterRequest, RegisterResponse, LoginResponse } from './auth.dto';
 import { setAuthCookie, clearAuthCookie } from '../../utils/cookieUtils';
@@ -126,6 +126,45 @@ class AuthController {
       message: 'Logged out successfully',
     });
   };
+
+  // Forgot Password
+  async forgotPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { error } = forgotPasswordSchema.validate(req.body);
+      if (error) {
+        return next(new AppError(error.details[0].message, 400));
+      }
+
+      await AuthService.forgotPassword(req.body.email);
+
+      res.status(200).json({
+        success: true,
+        message: 'Password reset link sent to email',
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  // Reset Password
+  async resetPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { error } = resetPasswordSchema.validate(req.body);
+      if (error) {
+        return next(new AppError(error.details[0].message, 400));
+      }
+
+      const { token, password } = req.body;
+      await AuthService.resetPassword(token, password);
+
+      res.status(200).json({
+        success: true,
+        message: 'Password reset successfully',
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 export default new AuthController();

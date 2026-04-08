@@ -19,4 +19,8 @@ router.get('/google/callback', AuthController.googleCallback);
 // Logout
 router.post('/logout', AuthController.logout);
 
+// Forgot & Reset Password
+router.post('/forgot-password', AuthController.forgotPassword);
+router.post('/reset-password', AuthController.resetPassword);
+
 export default router;

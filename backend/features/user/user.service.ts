@@ -27,7 +27,23 @@ class UserService {
   }
 
   // Request Email Change
-  async requestEmailChange(userId: string, newEmail: string) {
+  async requestEmailChange(userId: string, newEmail: string, currentPassword?: string) {
+    const user = await User.findById(userId).select('+password');
+    if (!user) {
+      throw new AppError('User not found', 404);
+    }
+
+    // Verify password if it's a local account
+    if (!user.googleId) {
+        if (!currentPassword) {
+            throw new AppError('Password is required to change email', 400);
+        }
+        const isMatch = await user.matchPassword(currentPassword);
+        if (!isMatch) {
+            throw new AppError('Incorrect password', 401);
+        }
+    }
+
     // Check if email already taken
     const existingUser = await User.findOne({ email: newEmail });
     if (existingUser) {
@@ -39,11 +55,10 @@ class UserService {
     const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
     // Save to DB
-    await User.findByIdAndUpdate(userId, {
-      newEmail,
-      emailVerificationToken: hashedToken,
-      emailVerificationExpires: Date.now() + 10 * 60 * 1000, // 10 mins
-    });
+    user.newEmail = newEmail;
+    user.emailVerificationToken = hashedToken;
+    user.emailVerificationExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+    await user.save();
 
     // MOCK SEND EMAIL
     console.log(`[MOCK EMAIL SERVICE] Verification Token for ${newEmail}: ${token}`);

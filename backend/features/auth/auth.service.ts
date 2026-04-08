@@ -1,5 +1,6 @@
 
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import User, { IUser } from '../../models/User';
 import { RegisterRequest, TokenPayload } from './auth.dto';
 import { UserRole } from '../../enums/userRole';
@@ -71,6 +72,52 @@ class AuthService {
     });
 
     return { user, token };
+  }
+
+  // Forgot Password
+  async forgotPassword(email: string) {
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw new AppError('User not found', 404);
+    }
+
+    // Generate Token
+    const resetToken = crypto.randomBytes(20).toString('hex');
+    const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+    // Set Reset Token and Expiry (1 hour)
+    user.resetPasswordToken = hashedToken;
+    user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000);
+
+    await user.save();
+
+    // MOCK EMAIL
+    console.log(`[MOCK EMAIL SERVICE] Password Reset Token for ${email}: ${resetToken}`);
+
+    return resetToken;
+  }
+
+  // Reset Password
+  async resetPassword(token: string, password: string) {
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      throw new AppError('Invalid or expired reset token', 400);
+    }
+
+    // Update password
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+
+    await user.save();
+
+    return user;
   }
 }
 

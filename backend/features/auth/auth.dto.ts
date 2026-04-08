@@ -11,6 +11,7 @@ export interface RegisterRequest extends BaseRequest {
   name: string;
   email: string;
   password?: string;
+  confirmPassword?: string;
   avatar?: string;
   googleId?: string;
 }
