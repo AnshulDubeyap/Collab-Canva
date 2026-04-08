@@ -81,7 +81,12 @@ const theme = createTheme({
             backgroundColor: 'rgba(255, 255, 255, 0.05)',
             '&:hover': {
                  backgroundColor: 'rgba(255, 255, 255, 0.08)',
-            }
+            },
+            '& input:-webkit-autofill': {
+              WebkitBoxShadow: '0 0 0 100px #001D3D inset !important',
+              WebkitTextFillColor: '#ffffff !important',
+              transition: 'background-color 5000s ease-in-out 0s',
+            },
           },
         },
       },

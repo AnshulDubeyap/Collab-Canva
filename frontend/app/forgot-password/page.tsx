@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Box, TextField, Button, Typography, Paper, Link as MuiLink, Container, InputAdornment } from '@mui/material';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import api from '@/src/services/api';
 import { useUiStore } from '@/src/store/useUiStore';
@@ -11,6 +12,7 @@ import { Mail, ArrowLeft } from 'lucide-react';
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
   const { showToast } = useUiStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -18,7 +20,8 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     try {
       await api.post('/auth/forgot-password', { email });
-      showToast('Reset token sent to your email!', 'success');
+      showToast('Reset code sent to your email!', 'success');
+      router.push('/reset-password');
     } catch (err: any) {
       // Global interceptor handles errors
     } finally {

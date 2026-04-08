@@ -56,13 +56,13 @@ export default function ResetPasswordPage() {
           <Image src="/logo.png" alt="Logo" width={64} height={64} style={{ borderRadius: '12px' }} />
           <Typography variant="h4" sx={{ mt: 2, fontWeight: 900, textAlign: 'center' }}>Reset Password</Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mt: 1, textAlign: 'center' }}>
-            Enter your verification token and your new password
+            Enter the 6-digit code from your email to set a new password
           </Typography>
         </Box>
 
         <form onSubmit={handleSubmit}>
           <TextField 
-            fullWidth label="Verification Token" margin="normal" variant="outlined" 
+            fullWidth label="6-Digit Verification Code" margin="normal" variant="outlined" 
             value={token} onChange={(e) => setToken(e.target.value)} required
             slotProps={{
               input: {
@@ -71,7 +71,8 @@ export default function ResetPasswordPage() {
                     <Key size={18} opacity={0.5} />
                   </InputAdornment>
                 ),
-              }
+              },
+              htmlInput: { maxLength: 6 }
             }}
           />
 

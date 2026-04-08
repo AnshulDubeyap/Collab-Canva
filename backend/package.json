@@ -23,9 +23,11 @@
     "winston": "^3.19.0",
     "ws": "^8.19.0",
     "y-websocket": "^3.0.0",
-    "yjs": "^13.6.29"
+    "yjs": "^13.6.29",
+    "nodemailer": "^6.9.14"
   },
   "devDependencies": {
+    "@types/nodemailer": "^6.4.15",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",

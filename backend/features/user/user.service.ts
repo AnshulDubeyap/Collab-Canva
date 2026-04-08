@@ -1,6 +1,7 @@
 import User, { IUser } from '../../models/User';
 import { AppError } from '../../errors/AppError';
 import crypto from 'crypto';
+import { sendVerificationEmail } from '../../utils/emailService';
 
 class UserService {
   // Get User Profile
@@ -50,8 +51,8 @@ class UserService {
       throw new AppError('Email already in use', 400);
     }
 
-    // Generate Token
-    const token = crypto.randomBytes(20).toString('hex');
+    // Generate 6-digit numeric token
+    const token = crypto.randomInt(100000, 999999).toString();
     const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
     // Save to DB
@@ -60,8 +61,8 @@ class UserService {
     user.emailVerificationExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
     await user.save();
 
-    // MOCK SEND EMAIL
-    console.log(`[MOCK EMAIL SERVICE] Verification Token for ${newEmail}: ${token}`);
+    // Send Real Email
+    await sendVerificationEmail(newEmail, token);
     
     return token;
   }

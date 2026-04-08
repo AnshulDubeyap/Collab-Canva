@@ -5,6 +5,7 @@ import User, { IUser } from '../../models/User';
 import { RegisterRequest, TokenPayload } from './auth.dto';
 import { UserRole } from '../../enums/userRole';
 import { AppError } from "../../errors/AppError";
+import { sendPasswordResetEmail } from '../../utils/emailService';
 
 // Ensure JWT_SECRET is available
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
@@ -81,8 +82,8 @@ class AuthService {
       throw new AppError('User not found', 404);
     }
 
-    // Generate Token
-    const resetToken = crypto.randomBytes(20).toString('hex');
+    // Generate 6-digit numeric token
+    const resetToken = crypto.randomInt(100000, 999999).toString();
     const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
 
     // Set Reset Token and Expiry (1 hour)
@@ -91,8 +92,8 @@ class AuthService {
 
     await user.save();
 
-    // MOCK EMAIL
-    console.log(`[MOCK EMAIL SERVICE] Password Reset Token for ${email}: ${resetToken}`);
+    // Send Real Email
+    await sendPasswordResetEmail(email, resetToken);
 
     return resetToken;
   }
