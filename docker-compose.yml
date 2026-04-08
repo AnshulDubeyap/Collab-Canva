@@ -9,20 +9,12 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
+    env_file:
+      - ./backend/.env
     environment:
       - NODE_ENV=production
       - PORT=8080
-      - DATABASE_URL=${DATABASE_URL}
-      - DATABASE_NAME=${DATABASE_NAME}
-      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-      - JWT_SECRET=${JWT_SECRET}
-      - JWT_EXPIRE=${JWT_EXPIRE}
-      - FRONTEND_URL=${FRONTEND_URL}
       - BACKEND_URL=http://backend:8080
-      - SMTP_MAIL=${SMTP_MAIL}
-      - SMTP_PASSWORD=${SMTP_PASSWORD}
-      - SMTP_PORT=${SMTP_PORT}
     depends_on:
       - mongodb
     restart: unless-stopped
