@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/src/store/useAuthStore';
+import { useAuthStore } from '@/store/useAuthStore';
 import { Box, CircularProgress } from '@mui/material';
 
 export default function RootPage() {

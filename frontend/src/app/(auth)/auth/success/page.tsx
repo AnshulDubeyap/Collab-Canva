@@ -3,9 +3,9 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Box, CircularProgress, Typography } from '@mui/material';
-import api from '@/src/services/api';
-import { useAuthStore } from '@/src/store/useAuthStore';
-import { useUiStore } from '@/src/store/useUiStore';
+import api from '@/api/api';
+import { useAuthStore } from '@/store/useAuthStore';
+import { useUiStore } from '@/store/useUiStore';
 
 export default function AuthSuccessPage() {
   const router = useRouter();

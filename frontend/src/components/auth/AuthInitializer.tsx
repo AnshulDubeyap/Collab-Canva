@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { useAuthStore } from '@/src/store/useAuthStore';
-import api from '@/src/services/api';
+import { useAuthStore } from '@/store/useAuthStore';
+import api from '@/api/api';
 
 export default function AuthInitializer() {
   const { setUser, setLoading } = useAuthStore();

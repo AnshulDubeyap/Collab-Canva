@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import api from '@/src/services/api';
+import api from '@/api/api';
 
 export interface User {
   id: string;

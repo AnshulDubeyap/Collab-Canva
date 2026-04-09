@@ -5,8 +5,8 @@ import { Box, TextField, Button, Typography, Paper, Link as MuiLink, Container, 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import api from '@/src/services/api';
-import { useUiStore } from '@/src/store/useUiStore';
+import api from '@/api/api';
+import { useUiStore } from '@/store/useUiStore';
 import { Lock, Key, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 
 export default function ResetPasswordPage() {

@@ -5,12 +5,16 @@ import { Box, TextField, Button, Typography, Link as MuiLink, Paper, Divider, In
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuthStore } from '@/src/store/useAuthStore';
-import { useUiStore } from '@/src/store/useUiStore';
-import api from '@/src/services/api';
+import { useAuthStore } from '@/store/useAuthStore';
+import { useUiStore } from '@/store/useUiStore';
+import api from '@/api/api';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 
-export default function LoginForm() {
+interface LoginFormProps {
+  redirect?: string;
+}
+
+export default function LoginForm({ redirect = '/home' }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -26,7 +30,7 @@ export default function LoginForm() {
       const res = await api.post('/auth/login', { email, password });
       setUser(res.data.user);
       showToast('Login successful!', 'success');
-      router.push('/home');
+      router.push(redirect);
     } catch (err: any) {
        // Global interceptor handles error toasts now
     } finally {
@@ -126,7 +130,7 @@ export default function LoginForm() {
 
       <Typography variant="body2" align="center" color="text.secondary">
         Don't have an account? {' '}
-        <MuiLink component={Link} href="/register" underline="hover" color="secondary" sx={{ fontWeight: 600 }}>
+        <MuiLink component={Link} href={`/register?redirect=${encodeURIComponent(redirect)}`} underline="hover" color="secondary" sx={{ fontWeight: 600 }}>
             Create one now
         </MuiLink>
       </Typography>

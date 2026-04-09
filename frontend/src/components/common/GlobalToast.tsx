@@ -1,7 +1,7 @@
 'use client';
 
 import { Snackbar, Alert } from '@mui/material';
-import { useUiStore } from '@/src/store/useUiStore';
+import { useUiStore } from '@/store/useUiStore';
 
 export default function GlobalToast() {
   const { toast, hideToast } = useUiStore();

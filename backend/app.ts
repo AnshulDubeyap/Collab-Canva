@@ -35,10 +35,12 @@ app.use(passport.initialize());
 
 import authRoutes from './features/auth/auth.routes';
 import userRoutes from './features/user/user.routes';
+import roomRoutes from './features/room/room.routes';
 import { errorHandler } from './middleware/errorMiddleware';
 
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
+app.use('/rooms', roomRoutes);
 
 // Routes
 app.get('/health', (req, res) => {

@@ -1,16 +1,19 @@
 'use client';
 
 import { Box, Container, Typography, Button, Paper } from '@mui/material';
-import Navbar from '@/src/components/common/Navbar';
-import ProfileModal from '@/src/components/profile/ProfileModal';
-import { useAuthStore } from '@/src/store/useAuthStore';
+import Navbar from '@/components/common/Navbar';
+import ProfileModal from '@/components/profile/ProfileModal';
+import { useAuthStore } from '@/store/useAuthStore';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, Palette, Users, Sparkles } from 'lucide-react';
+import CreateRoomModal from '@/components/home/CreateRoomModal';
+import { useState } from 'react';
 
 export default function HomePage() {
     const { user, isAuthenticated, isLoading } = useAuthStore();
     const router = useRouter();
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     useEffect(() => {
         if (!isLoading && !isAuthenticated) {
@@ -26,6 +29,11 @@ export default function HomePage() {
         <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', pb: 8 }}>
             <Navbar />
             <ProfileModal />
+            <CreateRoomModal 
+                open={isCreateModalOpen} 
+                onClose={() => setIsCreateModalOpen(false)} 
+                userName={user?.name || ''} 
+            />
 
             <Container maxWidth="lg" sx={{ mt: { xs: 4, md: 8 } }}>
                 <Paper
@@ -71,7 +79,7 @@ export default function HomePage() {
                                     boxShadow: '0 8px 32px rgba(33, 150, 243, 0.3)',
                                     textTransform: 'none'
                                 }}
-                                onClick={() => { }} // Does nothing for now
+                                onClick={() => setIsCreateModalOpen(true)}
                             >
                                 Create Room
                             </Button>

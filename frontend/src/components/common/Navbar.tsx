@@ -3,9 +3,9 @@
 import { AppBar, Toolbar, Typography, Button, IconButton, Avatar, Box, Tooltip } from '@mui/material';
 import Image from 'next/image';
 import { LogOut } from 'lucide-react';
-import { useAuthStore } from '@/src/store/useAuthStore';
-import { useUiStore } from '@/src/store/useUiStore';
-import api from '@/src/services/api';
+import { useAuthStore } from '@/store/useAuthStore';
+import { useUiStore } from '@/store/useUiStore';
+import api from '@/api/api';
 import { useRouter } from 'next/navigation';
 
 export default function Navbar() {
